@@ -10,3 +10,5 @@ flask run
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\venv\Scripts\activate
 flask run
+
+pip install simpleaudio

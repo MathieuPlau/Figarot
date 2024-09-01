@@ -1,4 +1,5 @@
 import os
+import simpleaudio as sa
 
 # Function to parse the directory
 def parse_directory(path):
@@ -19,3 +20,11 @@ def parse_directory(path):
                 'path': file_path
             })
     return directory_contents
+
+def play_wave(sound):
+    # Load the sound
+    wave_obj = sa.WaveObject.from_wave_file(sound)  
+    # Play the sound
+    play_obj = wave_obj.play()
+    # Wait for the sound to finish playing
+    play_obj.wait_done()
