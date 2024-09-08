@@ -51,3 +51,13 @@ def folder_contents():
 def soundtest():
     sound_path = Path(Config.SAMPLES_PATH) / "Bobo.wav"
     return play_wave(str(sound_path))
+
+# Play a given sound
+@main_bp.route('/play_sound', methods=['POST'])
+def play_sound():    
+    sound_file = request.json.get('file_path')  # Get the file path from the request
+    if sound_file:        
+        play_wave(sound_file)
+        return jsonify({'status': 'success', 'message': f'Playing sound: {sound_file}'})
+    else:
+        return jsonify({'status': 'error', 'message': 'No file specified'}), 400

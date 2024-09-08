@@ -27,6 +27,7 @@ def parse_files(directory_path):
     return files
 
 def play_wave(sound):
+    print("DEBUG: " + sound)
     # Load the sound
     wave_obj = sa.WaveObject.from_wave_file(sound)  
     # Play the sound

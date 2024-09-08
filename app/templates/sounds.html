@@ -31,28 +31,46 @@
     <script>
         // Function to load folder contents via AJAX
         function loadFolderContents(folder) {
-            // Remove active class from all tabs
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-
-            // Add active class to the clicked tab
             event.target.classList.add('active');
 
-            // Send AJAX request to get the folder contents
             fetch(`/folder_contents?folder=${folder}`)
                 .then(response => response.json())
                 .then(data => {
-                    // Display the files in #file-list
                     const fileList = document.getElementById('file-list');
                     fileList.innerHTML = `<h2>Contents of ${folder}</h2><ul>`;
 
-                    // Loop through files and add them to the list
                     data.forEach(item => {
                         if (item.type === 'file') {
-                            fileList.innerHTML += `<li>${item.name}</li>`;
+                            const filePath = `./samples/${folder}/${item.name}`;
+                            fileList.innerHTML += `
+                                <li>
+                                    <a href="#" onclick="playSound('${filePath}')">${item.name}</a>
+                                </li>`;
                         }
                     });
                     fileList.innerHTML += `</ul>`;
                 });
+        }
+
+        // Function to trigger sound playback on the server
+        function playSound(filePath) {
+            // Send a POST request to the server to play the sound
+            fetch('/play_sound', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ file_path: filePath })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    console.log(data.message);
+                } else {
+                    console.error(data.message);
+                }
+            });
         }
     </script>
 </body>
