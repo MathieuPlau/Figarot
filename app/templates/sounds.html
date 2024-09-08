@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Directory Listing</title>
+</head>
+<body>
+    <h1>Contents of Directory: {{ directory_path }}</h1>
+    <ul>
+        {% for item in directory_contents %}
+            <li>
+                {% if item.type == 'folder' %}
+                    <strong>[Folder]</strong> {{ item.name }}
+                {% else %}
+                    <strong>[File]</strong> {{ item.name }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
