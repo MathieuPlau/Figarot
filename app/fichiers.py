@@ -1,25 +1,30 @@
 import os
 import simpleaudio as sa
 
-# Function to parse the directory
-def parse_directory(path):
-    directory_contents = []
-    for root, dirs, files in os.walk(path):
-        for dir_name in dirs:
-            dir_path = os.path.join(root, dir_name)
-            directory_contents.append({
-                'type': 'folder',
-                'name': dir_name,
-                'path': dir_path
-            })
-        for file_name in files:
-            file_path = os.path.join(root, file_name)
-            directory_contents.append({
-                'type': 'file',
-                'name': file_name,
-                'path': file_path
-            })
-    return directory_contents
+# Returns directories from the given path
+def parse_directories(path):
+    directories = []
+    with os.scandir(path) as it:
+        for entry in it:
+            if entry.is_dir():
+                directories.append({
+                    'name': entry.name,
+                    'type': 'folder'
+                })
+    return directories 
+
+# Returns files from the given directory
+def parse_files(directory_path): 
+    print("DEBUG: " + directory_path)   
+    files = []
+    with os.scandir(directory_path) as it:
+        for entry in it:
+            if entry.is_file():
+                files.append({
+                    'name': entry.name,
+                    'type': 'file'
+                })
+    return files
 
 def play_wave(sound):
     # Load the sound

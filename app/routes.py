@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, send_file, jsonify
-from app.fichiers import parse_directory, play_wave
+from app.fichiers import parse_directories, parse_files, play_wave
 from config import Config
 from pathlib import Path
 
@@ -15,9 +15,24 @@ def about():
 
 @main_bp.route('/sounds')
 def sounds():
-    directory_path = request.args.get('dir', Config.SAMPLES_PATH)  # default to current directory
-    directory_contents = parse_directory(directory_path)
+    # Serve the main page with tabs for folders
+    directory_path = request.args.get('dir', Config.SAMPLES_PATH)
+    directory_contents = parse_directories(directory_path)  # Get only directories
     return render_template('sounds.html', directory_contents=directory_contents, directory_path=directory_path)
+
+@main_bp.route('/folder_contents')
+def folder_contents():
+    # Fetch the contents of a folder dynamically
+    folder_path = request.args.get('folder')
+    folder_contents = parse_files(Config.SAMPLES_PATH + folder_path)  # Get only files in the folder
+    return jsonify(folder_contents)
+
+
+# @main_bp.route('/sounds')
+# def sounds():
+#     directory_path = request.args.get('dir', Config.SAMPLES_PATH)  # default to current directory
+#     directory_contents = parse_directory(directory_path)
+#     return render_template('sounds.html', directory_contents=directory_contents, directory_path=directory_path)
 
 # @main_bp.route('/wav')
 # def soundtest():

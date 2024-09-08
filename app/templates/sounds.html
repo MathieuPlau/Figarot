@@ -3,19 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <title>Directory Listing</title>
+    <style>
+        .tab { cursor: pointer; padding: 10px; background-color: #f1f1f1; margin-right: 5px; display: inline-block; }
+        .tab.active { background-color: #ddd; }
+        #file-list { margin-top: 20px; }
+    </style>
 </head>
 <body>
-    <h1>Contents of Directory: {{ directory_path }}</h1>
-    <ul>
+    <h1>Directory Browser</h1>
+
+    <!-- Tabs for Folders -->
+    <div id="folder-tabs">
         {% for item in directory_contents %}
-            <li>
-                {% if item.type == 'folder' %}
-                    <strong>[Folder]</strong> {{ item.name }}
-                {% else %}
-                    <strong>[File]</strong> {{ item.name }}
-                {% endif %}
-            </li>
+            {% if item.type == 'folder' %}
+                <div class="tab" onclick="loadFolderContents('{{ item.name }}')">
+                    {{ item.name }}
+                </div>
+            {% endif %}
         {% endfor %}
-    </ul>
+    </div>
+
+    <!-- Display Files -->
+    <div id="file-list">
+        <h2>Select a folder to see files</h2>
+    </div>
+
+    <script>
+        // Function to load folder contents via AJAX
+        function loadFolderContents(folder) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+
+            // Add active class to the clicked tab
+            event.target.classList.add('active');
+
+            // Send AJAX request to get the folder contents
+            fetch(`/folder_contents?folder=${folder}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Display the files in #file-list
+                    const fileList = document.getElementById('file-list');
+                    fileList.innerHTML = `<h2>Contents of ${folder}</h2><ul>`;
+
+                    // Loop through files and add them to the list
+                    data.forEach(item => {
+                        if (item.type === 'file') {
+                            fileList.innerHTML += `<li>${item.name}</li>`;
+                        }
+                    });
+                    fileList.innerHTML += `</ul>`;
+                });
+        }
+    </script>
 </body>
 </html>
