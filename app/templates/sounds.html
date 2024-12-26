@@ -3,14 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <title>Directory Listing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        .tab { cursor: pointer; padding: 10px; background-color: #f1f1f1; margin-right: 5px; display: inline-block; }
-        .tab.active { background-color: #ddd; }
-        #file-list { margin-top: 20px; }
+        body { 
+            font-family: 'Roboto', sans-serif;
+        }
+         h1, h2 {
+            font-family: 'Roboto', sans-serif; 
+            font-weight: 700;
+        }
+        .tab {
+            cursor: pointer; 
+            padding: 10px; 
+            background-color: #f1f1f1; 
+            margin-right: 5px; 
+            display: inline-block; 
+        }
+        .tab.active { 
+            background-color: #ddd; 
+        }
+        #file-list { 
+            margin-top: 20px; 
+        }
     </style>
 </head>
 <body>
-    <h1>Directory Browser</h1>
+    <h1>FIGAROT</h1>
 
     <!-- Tabs for Folders -->
     <div id="folder-tabs">
@@ -38,7 +56,7 @@
                 .then(response => response.json())
                 .then(data => {
                     const fileList = document.getElementById('file-list');
-                    fileList.innerHTML = `<h2>Contents of ${folder}</h2><ul>`;
+                    fileList.innerHTML = `<h2>Sons de ${folder}</h2><ul>`;
 
                     data.forEach(item => {
                         if (item.type === 'file') {
@@ -52,7 +70,7 @@
                     fileList.innerHTML += `</ul>`;
                 });
         }
-
+        
         // Function to trigger sound playback on the server
         function playSound(filePath) {
             // Send a POST request to the server to play the sound
