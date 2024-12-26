@@ -80,16 +80,18 @@
                 .then(response => response.json())
                 .then(data => {
                     const fileList = document.getElementById('file-list');
-                    fileList.innerHTML = `<h2>Sons de ${folder}</h2><ul>`;
+                    fileList.innerHTML = `<h2>Sons de ${folder}</h2>`;
                     const soundGrid = document.createElement('div');
                     soundGrid.classList.add('sound-grid');
 
                     data.forEach(item => {
                         if (item.type === 'file') {
                             const filePath = `./samples/${folder}/${item.name}`;
+                            const fileNameWithoutExtension = item.name.replace(/\.[^/.]+$/, ""); // Remove the extension
+                            // \.[^/.]+$: Matches a period followed by any sequence of characters that are not / or another . until the end of the string.
                             const soundBox = document.createElement('div');
                             soundBox.classList.add('sound-box');
-                            soundBox.innerHTML = `<a href="#" onclick="playSound('${filePath}')">${item.name}</a>`;
+                            soundBox.innerHTML = `<a href="#" onclick="playSound('${filePath}')">${fileNameWithoutExtension}</a>`;
                             soundGrid.appendChild(soundBox);
                         }
                     });
