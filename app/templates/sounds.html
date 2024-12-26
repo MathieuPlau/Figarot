@@ -25,6 +25,30 @@
         #file-list { 
             margin-top: 20px; 
         }
+        
+        .sound-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .sound-box {
+            width: 150px;
+            height: 100px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .sound-box a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -57,17 +81,20 @@
                 .then(data => {
                     const fileList = document.getElementById('file-list');
                     fileList.innerHTML = `<h2>Sons de ${folder}</h2><ul>`;
+                    const soundGrid = document.createElement('div');
+                    soundGrid.classList.add('sound-grid');
 
                     data.forEach(item => {
                         if (item.type === 'file') {
                             const filePath = `./samples/${folder}/${item.name}`;
-                            fileList.innerHTML += `
-                                <li>
-                                    <a href="#" onclick="playSound('${filePath}')">${item.name}</a>
-                                </li>`;
+                            const soundBox = document.createElement('div');
+                            soundBox.classList.add('sound-box');
+                            soundBox.innerHTML = `<a href="#" onclick="playSound('${filePath}')">${item.name}</a>`;
+                            soundGrid.appendChild(soundBox);
                         }
                     });
-                    fileList.innerHTML += `</ul>`;
+
+                    fileList.appendChild(soundGrid);
                 });
         }
         
