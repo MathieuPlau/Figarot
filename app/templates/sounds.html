@@ -24,8 +24,7 @@
         }
         #file-list { 
             margin-top: 20px; 
-        }
-        
+        }        
         .sound-grid {
             display: flex;
             flex-wrap: wrap;
@@ -33,21 +32,28 @@
             margin-top: 20px;
         }
         .sound-box {
-            width: 150px;
-            height: 100px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        width: 150px;
+        height: 100px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column; /* Stack filename and other elements */
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        overflow: hidden; /* Prevent text overflow */
         }
         .sound-box a {
             text-decoration: none;
             color: #333;
             font-weight: bold;
+            font-size: 16px;
+            word-break: break-word; /* Ensure long names wrap inside the box */
+            text-align: center;
+            margin-bottom: 5px; /* Space between the filename and other content */
         }
     </style>
 </head>
