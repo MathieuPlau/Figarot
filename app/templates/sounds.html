@@ -55,10 +55,19 @@
             text-align: center;
             margin-bottom: 5px; /* Space between the filename and other content */
         }
+        #controls {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <h1>FIGAROT</h1>
+
+    <!-- Controls -->
+    <div id="controls">
+        <button onclick="killAllSounds()">TA GUEULE !!!</button>
+    </div>
 
     <!-- Tabs for Folders -->
     <div id="folder-tabs">
@@ -123,6 +132,21 @@
                     console.log(data.message);
                 } else {
                     console.error(data.message);
+                }
+            });
+        }
+
+        // Function to stop all sounds
+        function killAllSounds() {
+            fetch('/stop', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'stopped') {
+                    console.log('All sounds stopped.');
+                } else {
+                    console.error('Error stopping sounds.');
                 }
             });
         }

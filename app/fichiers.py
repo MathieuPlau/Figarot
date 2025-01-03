@@ -1,5 +1,10 @@
 import os
 import simpleaudio as sa
+import threading
+
+# Thread-safe list to store active sounds
+active_sounds_lock = threading.Lock()
+active_sounds = []
 
 # Returns directories from the given path
 def parse_directories(path):
@@ -32,5 +37,6 @@ def play_wave(sound):
     wave_obj = sa.WaveObject.from_wave_file(sound)  
     # Play the sound
     play_obj = wave_obj.play()
-    # Wait for the sound to finish playing
-    play_obj.wait_done()
+    # keep track of played sounds
+    with active_sounds_lock:
+        active_sounds.append(play_obj)
