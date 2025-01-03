@@ -58,15 +58,31 @@
         #controls {
             margin-top: 10px;
             margin-bottom: 10px;
+        }       
+        #stopButton {
+        background-color: red; /* Red background */
+        color: white; /* White text */
+        font-weight: bold; /* Bold text */
+        border: none; /* Remove borders */
+        padding: 10px 20px; /* Add padding for a larger button */
+        font-size: 16px; /* Increase font size */
+        border-radius: 5px; /* Add rounded corners */
+        cursor: pointer; /* Change cursor to pointer on hover */
+        transition: background-color 0.3s ease; /* Smooth hover effect */
         }
+        #stopButton:hover {
+        background-color: darkred; /* Darker red on hover */
+        }
+</style>
+
     </style>
 </head>
 <body>
     <h1>FIGAROT</h1>
 
     <!-- Controls -->
-    <div id="controls">
-        <button onclick="killAllSounds()">TA GUEULE !!!</button>
+    <div id="controls">       
+        <button id="stopButton" onclick="killAllSounds()">TA GUEULE !</button>
     </div>
 
     <!-- Tabs for Folders -->
