@@ -11,7 +11,8 @@ def parse_directories(path):
     directories = []
     with os.scandir(path) as it:
         for entry in it:
-            if entry.is_dir():
+            # Avoid git directory to be parsed
+            if (entry.is_dir() and entry.name != ".git"):
                 directories.append({
                     'name': entry.name,
                     'type': 'folder'
