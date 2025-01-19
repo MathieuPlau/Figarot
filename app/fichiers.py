@@ -38,7 +38,7 @@ def parse_files(directory_path):
                 })
     return files
 
-def play_wave(sound_path):
+def play_audio_file(sound_path):
     if(Config.DEBUG):
         print("DEBUG: " + sound_path)
 

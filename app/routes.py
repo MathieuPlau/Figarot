@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, send_file, jsonify
-from app.fichiers import parse_directories, parse_files, play_wave, active_sounds, active_sounds_lock, stop
+from app.fichiers import parse_directories, parse_files, play_audio_file, active_sounds, active_sounds_lock, stop
 from config import Config
 # from pathlib import Path
 import threading
@@ -33,7 +33,7 @@ def folder_contents():
 def play_sound():    
     sound_file = request.json.get('file_path')  # Get the file path from the request
     if sound_file:        
-        threading.Thread(target=play_wave, args=(sound_file,)).start()
+        threading.Thread(target=play_audio_file, args=(sound_file,)).start()
         return jsonify({'status': 'playing', 'file': sound_file})
     
 # Kill all sounds
