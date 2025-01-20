@@ -91,4 +91,5 @@ def stop():
         for sound in active_sounds:
             if sound is not None:
                 sound.stop()
-        active_sounds.clear()
+        active_sounds.clear()      
+
