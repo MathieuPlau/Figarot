@@ -32,46 +32,61 @@
             margin-top: 20px;
         }
         .sound-box {
-        width: 150px;
-        height: 100px;
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        display: flex;
-        flex-direction: column; /* Stack filename and other elements */
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        padding: 10px;
-        overflow: hidden; /* Prevent text overflow */
-        }
-        .sound-box a {
-            text-decoration: none;
-            color: #333;
+            width: 150px;
+            height: 100px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex; /* Flexbox for alignment */
+            flex-direction: column; /* Stack elements vertically */
+            justify-content: center; /* Center content vertically */
+            align-items: center; /* Center content horizontally */
+            text-align: center; /* Center the text itself */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            overflow: hidden; /* Prevent overflowing content */
+            text-decoration: none; /* Remove underline */
+            color: inherit; /* Inherit text color */
             font-weight: bold;
             font-size: 16px;
-            word-break: break-word; /* Ensure long names wrap inside the box */
-            text-align: center;
-            margin-bottom: 5px; /* Space between the filename and other content */
+            word-wrap: break-word; /* Break long words */
+            overflow-wrap: break-word; /* Support for breaking long words */
+            white-space: normal; /* Allow text to wrap */
+        }
+        .sound-box a {
+            text-align: center; /* Center text inside the link */
+            text-decoration: none; /* Remove underline */
+            color: inherit; /* Use inherited text color */
+            word-wrap: break-word; /* Enable word wrapping */
+            overflow-wrap: break-word; /* Compatibility for breaking words */
+            display: block; /* Ensure the text spans the box */
+            white-space: normal; /* Allow wrapping */
+        }
+
+        .sound-box div {
+            text-decoration: none; /* Remove underline */
+            font-family: 'Roboto', sans-serif; /* Keep the previous font style */
+        }
+        .sound-box:hover {
+            background-color: #eaeaea; /* Optional: Highlight on hover for better UX */
         }
         #controls {
             margin-top: 10px;
             margin-bottom: 10px;
         }       
         #stopButton {
-        background-color: red; /* Red background */
-        color: white; /* White text */
-        font-weight: bold; /* Bold text */
-        border: none; /* Remove borders */
-        padding: 10px 20px; /* Add padding for a larger button */
-        font-size: 16px; /* Increase font size */
-        border-radius: 5px; /* Add rounded corners */
-        cursor: pointer; /* Change cursor to pointer on hover */
-        transition: background-color 0.3s ease; /* Smooth hover effect */
+            background-color: red; /* Red background */
+            color: white; /* White text */
+            font-weight: bold; /* Bold text */
+            border: none; /* Remove borders */
+            padding: 10px 20px; /* Add padding for a larger button */
+            font-size: 16px; /* Increase font size */
+            border-radius: 5px; /* Add rounded corners */
+            cursor: pointer; /* Change cursor to pointer on hover */
+            transition: background-color 0.3s ease; /* Smooth hover effect */
         }
         #stopButton:hover {
-        background-color: darkred; /* Darker red on hover */
+            background-color: darkred; /* Darker red on hover */
         }
 </style>
 
@@ -102,6 +117,14 @@
     </div>
 
     <script>
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) {
+                return text; // No need to truncate
+            }
+            const visibleChars = Math.floor((maxLength - 3) / 2); // Characters to show on each side
+            return text.slice(0, visibleChars) + '...' + text.slice(-visibleChars); // Truncated format
+        }
+
         // Function to load folder contents via AJAX
         function loadFolderContents(folder) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -119,14 +142,19 @@
                         if (item.type === 'file') {
                             const filePath = `./samples/${folder}/${item.name}`;
                             const fileNameWithoutExtension = item.name.replace(/\.[^/.]+$/, ""); // Remove the extension
-                            // \.[^/.]+$: Matches a period followed by any sequence of characters that are not / or another . until the end of the string.
-                            const soundBox = document.createElement('div');
+
+                            // Truncate the name if it is too long
+                            const truncatedName = truncateText(fileNameWithoutExtension, 22); // Adjust maxLength as needed
+
+                            const soundBox = document.createElement('a'); // Use <a> as the main wrapper
                             soundBox.classList.add('sound-box');
-                            soundBox.innerHTML = `<a href="#" onclick="playSound('${filePath}')">${fileNameWithoutExtension}</a>`;
+                            soundBox.href = "#"; // Maintain the link behavior
+                            soundBox.onclick = () => playSound(filePath); // Attach the playSound function
+                            soundBox.innerHTML = `<div>${truncatedName}</div>`; // Inner content
                             soundGrid.appendChild(soundBox);
                         }
                     });
-
+                    
                     fileList.appendChild(soundGrid);
                 });
         }
