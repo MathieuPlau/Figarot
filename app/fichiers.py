@@ -47,9 +47,10 @@ def play_audio_file(sound_path):
 
     play_obj = None  # Initialize the play object
 
+    # Handle WAV files with simpleaudio
     if file_extension == ".wav":
-        # Handle WAV files with simpleaudio
         def play_wav():
+            nonlocal play_obj
             wave_obj = sa.WaveObject.from_wave_file(sound_path)
             play_obj = wave_obj.play()
             with active_sounds_lock:
@@ -58,9 +59,10 @@ def play_audio_file(sound_path):
         # Run WAV playback in a separate thread
         threading.Thread(target=play_wav).start()
 
+    # Handle MP3 files with pygame
     elif file_extension == ".mp3":
-        # Handle MP3 files with pygame
         def play_mp3():
+            nonlocal play_obj
             sound = pygame.mixer.Sound(sound_path)  # Load the MP3 as a Sound object
             channel = sound.play()  # Play the sound on a new channel
 
@@ -74,7 +76,8 @@ def play_audio_file(sound_path):
                     return self.channel.get_busy()
 
                 def stop(self):
-                    self.channel.stop()
+                    if(self.channel is not None):
+                        self.channel.stop()
 
             play_obj = PygamePlayObject(channel, sound_path)
             with active_sounds_lock:
@@ -88,8 +91,9 @@ def play_audio_file(sound_path):
 
 def stop():
     with active_sounds_lock:
-        for sound in active_sounds:
-            if sound is not None:
+        if(len(active_sounds) > 0):
+            for sound in active_sounds:
                 sound.stop()
-        active_sounds.clear()      
+
+            active_sounds.clear()      
 
