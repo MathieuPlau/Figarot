@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, send_file, jsonify
 from app.fichiers import parse_directories, parse_files, play_audio_file, active_sounds, active_sounds_lock, stop
+from app.voix import speak
 from config import Config
 import threading
 
@@ -32,3 +33,26 @@ def play_sound():
 def stop_route():
     stop()
     return "Stopped", 200
+
+# Text to speech
+@main_bp.route('/speak', methods=['POST'])
+def speak_route():
+    data = request.json
+    print("Received data:", data)  # Debugging print
+
+    if not data:
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
+
+    text = data.get("text", "")
+    lang = data.get("lang", "en")
+
+    if not text:
+        return jsonify({"status": "error", "message": "No text provided"}), 400
+
+    # print(f"Speaking in {lang}: {text}")  # Simulated speaking
+
+    # Speak the text
+    threading.Thread(target=speak, args=(text, lang)).start()
+
+    return jsonify({"status": "success", "message": "Speaking text"})
+

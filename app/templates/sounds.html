@@ -102,7 +102,6 @@
             overflow-wrap: break-word; /* Support for breaking long words */
             white-space: normal; /* Allow text to wrap */
         }
-
         .sound-box a {
             text-align: center; /* Center text inside the link */
             text-decoration: none; /* Remove underline */
@@ -171,7 +170,7 @@
         <div class="input-container">
             <!-- Language Selection -->
             <div class="input-group">
-                <label for="language">Choisir la langue :</label>
+                <label for="language">Choisis ta langue :</label>
                 <select id="language">
                     <option value="fr">Français</option>
                     <option value="en">English</option>
@@ -311,28 +310,45 @@
                 fileList.appendChild(soundGrid);
             });
     }
-
+    
     function speakText() {
-        const text = document.getElementById('text-input').value;
-        const language = document.getElementById('language').value;
+        let textInput = document.getElementById('text-input');  // Get the text input element
+        let languageSelect = document.getElementById('language');  // Get the language selection
+        let text = textInput.value.trim();  // Trim spaces from input
+        let lang = languageSelect.value;  // Get the selected language
 
         if (!text) {
             alert("Veuillez entrer du texte !");
             return;
         }
 
+        console.log("Sending request to server with:", { text, lang }); // ✅ Debugging log
+
         fetch('/speak', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text, language: language })
+            body: JSON.stringify({ text: text, lang: lang })
         })
         .then(response => response.json())
         .then(data => {
+            console.log("Server Response:", data); // ✅ Debugging log
+
             if (data.status === 'success') {
-                console.log("Speaking: " + text);
+                console.log(`Speaking in ${lang}: ${text}`);
+                
+                // ✅ Reset text input field after speaking
+                textInput.value = "";
+
+                // ✅ Ensure the selected language remains the same
+                languageSelect.value = lang;
+
+                console.log("Text input reset!"); // ✅ Debugging log
             } else {
                 console.error("Error: " + data.message);
             }
+        })
+        .catch(error => {
+            console.error("Request failed:", error);
         });
     }
     </script>

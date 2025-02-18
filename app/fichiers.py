@@ -27,7 +27,9 @@ def parse_directories(path):
 
 # Returns files from the given directory
 def parse_files(directory_path): 
-    print("DEBUG: " + directory_path)   
+    if(Config.DEBUG):
+        print("DEBUG: " + directory_path)   
+    
     files = []
     with os.scandir(directory_path) as it:
         for entry in it:
