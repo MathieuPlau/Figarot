@@ -4,6 +4,8 @@ from pathlib import Path
 import pygame
 import stat
 import threading
+import time
+from app.fichiers import active_sounds_lock, active_sounds
 from config import Config
 
 def speak(text, lang):
@@ -12,33 +14,74 @@ def speak(text, lang):
         print("DEBUG: " + text)
         print("DEBUG: " + lang)
         
-    """Convert text to speech and play it using pygame."""
     try:
         # Generate speech
         tts = gTTS(text=text, lang=lang)
-        filename = "./figarot_tts.mp3"
+        timestamp = str(int(time.time()))
+        filename = f"./figarot_{timestamp}.mp3"
         tts.save(filename)
-        
-        pygame.mixer.init()
-        pygame.mixer.music.load(filename)
-        pygame.mixer.music.play()
-
-        # Wait for playback to finish
-        while pygame.mixer.music.get_busy():
-            pygame.time.Clock().tick(10)
-
-        # Unload the file from pygame before trying to delete it
-        pygame.mixer.music.unload()  
-        pygame.mixer.quit()  
-
-        try:
-            os.remove(filename)
-        except PermissionError:            
-            os.chmod(filename, stat.S_IWRITE)
-            os.remove(filename)
-        except FileNotFoundError:
-        # File already gone
-            pass
-
     except Exception as e:
         print(f"Error in text-to-speech: {e}")
+        return
+
+    def play_speech():
+        if not pygame.mixer.get_init():
+               pygame.mixer.init()
+        
+        sound = pygame.mixer.Sound(filename)
+        channel = sound.play()
+
+        class PygamePlayObject:
+            """Custom object to manage active sound playback"""
+            def __init__(self, channel, sound_path):
+                self.channel = channel
+                self.path = sound_path  # Store the file path
+
+            def is_playing(self):
+                return self.channel.get_busy()
+
+            def stop(self):
+                if self.channel is not None:
+                    try:
+                        self.channel.stop()
+                        pygame.mixer.quit()  # Properly stop pygame audio
+                    except Exception as e:
+                        print(f"Error stopping sound: {e}")
+
+                # Always delete the file when stopping
+                self.delete_file()
+
+            def delete_file(self):
+                """Safely delete the MP3 file"""
+                try:
+                    os.remove(self.path)
+                    print(f"Deleted file: {self.path}")
+                except PermissionError:
+                    os.chmod(self.path, stat.S_IWRITE)
+                    os.remove(self.path)
+                except FileNotFoundError:
+                    pass  # File was already removed
+
+        play_obj = PygamePlayObject(channel, filename)
+
+        with active_sounds_lock:
+            active_sounds.append(play_obj)
+
+        # **Ensure the file is deleted after playing**
+        while channel.get_busy():
+            time.sleep(0.1)  # Wait while the sound is playing
+
+        # When playback is finished, delete the file
+        play_obj.delete_file()
+
+        # ✅ Remove from active sounds list
+        with active_sounds_lock:
+            if play_obj in active_sounds:
+                active_sounds.remove(play_obj)
+
+        # ✅ Quit mixer only if no sounds are left
+        with active_sounds_lock:
+            if not active_sounds:
+                pygame.mixer.quit()
+
+    threading.Thread(target=play_speech, daemon=True).start()  # ✅ Daemonized to avoid hanging threads

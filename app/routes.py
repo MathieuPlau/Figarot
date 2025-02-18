@@ -32,7 +32,7 @@ def play_sound():
 @main_bp.route('/stop', methods=['POST'])
 def stop_route():
     stop()
-    return "Stopped", 200
+    return jsonify({"status": "stopped"})
 
 # Text to speech
 @main_bp.route('/speak', methods=['POST'])
@@ -48,8 +48,6 @@ def speak_route():
 
     if not text:
         return jsonify({"status": "error", "message": "No text provided"}), 400
-
-    # print(f"Speaking in {lang}: {text}")  # Simulated speaking
 
     # Speak the text
     threading.Thread(target=speak, args=(text, lang)).start()
