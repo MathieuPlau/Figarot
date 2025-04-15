@@ -22,9 +22,58 @@
         .tab.active { 
             background-color: #ddd; 
         }
+        /* Parle, Figarot ! */
+        #fixed-tab-content {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        /* Container to stack elements vertically */
+        .input-container {
+            display: flex;
+            flex-direction: column;  /* Stack elements top-to-bottom */
+            align-items: center;  /* Center everything */
+            gap: 10px;  /* Add space between elements */
+            width: 100%;
+        }
+        /* Input Group (Align Language Selection) */
+        .input-group {
+            display: flex;
+        flex-direction: column;
+        align-items: center;
+        }
+        /* Style the Select Dropdown */
+        select {
+            padding: 5px;
+            font-size: 16px;
+        }
+        /* Style for the Text Area */
+        textarea {
+            width: 80%;
+            max-width: 500px;
+            height: 100px;
+            font-size: 16px;
+            padding: 5px;
+            resize: vertical;
+        }
+        /* Style for the Speak Button */
+        #speak-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #speak-button:hover {
+            background-color: #0056b3;
+        }
         #file-list { 
             margin-top: 20px; 
-        }        
+        }
         .sound-grid {
             display: flex;
             flex-wrap: wrap;
@@ -62,7 +111,6 @@
             display: block; /* Ensure the text spans the box */
             white-space: normal; /* Allow wrapping */
         }
-
         .sound-box div {
             text-decoration: none; /* Remove underline */
             font-family: 'Roboto', sans-serif; /* Keep the previous font style */
@@ -100,8 +148,12 @@
         <button id="stopButton" onclick="killAllSounds()">TA GUEULE !</button>
     </div>
 
-    <!-- Tabs for Folders -->
+    <!-- Tab Bar -->
     <div id="folder-tabs">
+        <!-- Fixed Tab (Parle, Figarot !) -->
+        <div class="tab active" id="fixed-tab" onclick="showFixedTab()">Parle, Figarot !</div>
+
+        <!-- Dynamic Tabs for Folders -->
         {% for item in directory_contents %}
             {% if item.type == 'folder' %}
                 <div class="tab" onclick="loadFolderContents('{{ item.name }}')">
@@ -111,9 +163,31 @@
         {% endfor %}
     </div>
 
+    <!-- Fixed Tab Content (Parle, Figarot !) -->
+    <div id="fixed-tab-content">
+        <h2>Parle, Figarot !</h2>
+        
+        <div class="input-container">
+            <!-- Language Selection -->
+            <div class="input-group">
+                <label for="language">Choisis ta langue :</label>
+                <select id="language">
+                    <option value="fr">Français</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <!-- Text Input -->
+            <textarea id="text-input" rows="4" cols="50" placeholder="Écris quelque chose de débile ici..."></textarea>
+
+            <!-- Speak Button -->
+            <button id="speak-button" onclick="speakText()">Parle</button>
+        </div>
+    </div>
+
     <!-- Display Files -->
     <div id="file-list">
-        <h2>Select a folder to see files</h2>
+        <h2>À toi de jouer 😁</h2>
     </div>
 
     <script>
@@ -157,8 +231,7 @@
                     
                     fileList.appendChild(soundGrid);
                 });
-        }
-        
+        }        
         
         // Function to trigger sound playback on the server
         function playSound(filePath) {
@@ -194,6 +267,90 @@
                 }
             });
         }
+
+        
+    function showFixedTab() {
+        document.getElementById('fixed-tab-content').style.display = 'block';
+        document.getElementById('file-list').style.display = 'none';
+
+        // Deactivate all other tabs
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        document.getElementById('fixed-tab').classList.add('active');
+    }
+
+    function loadFolderContents(folder) {
+        document.getElementById('fixed-tab-content').style.display = 'none';
+        document.getElementById('file-list').style.display = 'block';
+
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+
+        fetch(`/folder_contents?folder=${folder}`)
+            .then(response => response.json())
+            .then(data => {
+                const fileList = document.getElementById('file-list');
+                fileList.innerHTML = `<h2>Sons de ${folder}</h2>`;
+                const soundGrid = document.createElement('div');
+                soundGrid.classList.add('sound-grid');
+
+                data.forEach(item => {
+                    if (item.type === 'file') {
+                        const filePath = `./samples/${folder}/${item.name}`;
+                        const truncatedName = item.name.replace(/\.[^/.]+$/, "");
+
+                        const soundBox = document.createElement('a');
+                        soundBox.classList.add('sound-box');
+                        soundBox.href = "#";
+                        soundBox.onclick = () => playSound(filePath);
+                        soundBox.innerHTML = `<div>${truncatedName}</div>`;
+                        soundGrid.appendChild(soundBox);
+                    }
+                });
+
+                fileList.appendChild(soundGrid);
+            });
+    }
+    
+    function speakText() {
+        let textInput = document.getElementById('text-input');  // Get the text input element
+        let languageSelect = document.getElementById('language');  // Get the language selection
+        let text = textInput.value.trim();  // Trim spaces from input
+        let lang = languageSelect.value;  // Get the selected language
+
+        if (!text) {
+            alert("Veuillez entrer du texte !");
+            return;
+        }
+
+        console.log("Sending request to server with:", { text, lang }); // ✅ Debugging log
+
+        fetch('/speak', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, lang: lang })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Server Response:", data); // ✅ Debugging log
+
+            if (data.status === 'success') {
+                console.log(`Speaking in ${lang}: ${text}`);
+                
+                // ✅ Reset text input field after speaking
+                textInput.value = "";
+
+                // ✅ Ensure the selected language remains the same
+                languageSelect.value = lang;
+
+                console.log("Text input reset!"); // ✅ Debugging log
+            } else {
+                console.error("Error: " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Request failed:", error);
+        });
+    }
     </script>
 </body>
 </html>

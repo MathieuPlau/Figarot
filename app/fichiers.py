@@ -27,7 +27,9 @@ def parse_directories(path):
 
 # Returns files from the given directory
 def parse_files(directory_path): 
-    print("DEBUG: " + directory_path)   
+    if(Config.DEBUG):
+        print("DEBUG: " + directory_path)   
+    
     files = []
     with os.scandir(directory_path) as it:
         for entry in it:
@@ -63,6 +65,9 @@ def play_audio_file(sound_path):
     elif file_extension == ".mp3":
         def play_mp3():
             nonlocal play_obj
+            if not pygame.mixer.get_init():
+                pygame.mixer.init()
+
             sound = pygame.mixer.Sound(sound_path)  # Load the MP3 as a Sound object
             channel = sound.play()  # Play the sound on a new channel
 
@@ -95,5 +100,8 @@ def stop():
             for sound in active_sounds:
                 sound.stop()
 
-            active_sounds.clear()      
+            active_sounds.clear()
+    
+    if pygame.mixer.get_init():
+        pygame.mixer.quit()
 
