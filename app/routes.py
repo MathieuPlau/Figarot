@@ -1,17 +1,10 @@
 from flask import Blueprint, render_template, request, send_file, jsonify
-from app.fichiers import parse_directories, parse_files, play_wave
+from app.fichiers import parse_directories, parse_files, play_audio_file, active_sounds, active_sounds_lock, stop
+from app.voix import speak
 from config import Config
-from pathlib import Path
+import threading
 
 main_bp = Blueprint('main', __name__)
-
-@main_bp.route('/welcome')
-def home():
-    return render_template('home.html')
-
-@main_bp.route('/about')
-def about():
-    return render_template('about.html')
 
 @main_bp.route('/')
 def sounds():
@@ -32,7 +25,32 @@ def folder_contents():
 def play_sound():    
     sound_file = request.json.get('file_path')  # Get the file path from the request
     if sound_file:        
-        play_wave(sound_file)
-        return jsonify({'status': 'success', 'message': f'Playing sound: {sound_file}'})
-    else:
-        return jsonify({'status': 'error', 'message': 'No file specified'}), 400
+        threading.Thread(target=play_audio_file, args=(sound_file,)).start()
+        return jsonify({'status': 'playing', 'file': sound_file})
+    
+# Kill all sounds
+@main_bp.route('/stop', methods=['POST'])
+def stop_route():
+    stop()
+    return jsonify({"status": "stopped"})
+
+# Text to speech
+@main_bp.route('/speak', methods=['POST'])
+def speak_route():
+    data = request.json
+    print("Received data:", data)  # Debugging print
+
+    if not data:
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
+
+    text = data.get("text", "")
+    lang = data.get("lang", "en")
+
+    if not text:
+        return jsonify({"status": "error", "message": "No text provided"}), 400
+
+    # Speak the text
+    threading.Thread(target=speak, args=(text, lang)).start()
+
+    return jsonify({"status": "success", "message": "Speaking text"})
+

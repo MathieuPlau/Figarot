@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Directory Listing</title>
+    <title>/!\ FIGAROT /!\</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { 
@@ -22,16 +22,138 @@
         .tab.active { 
             background-color: #ddd; 
         }
+        /* Parle, Figarot ! */
+        #fixed-tab-content {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        /* Container to stack elements vertically */
+        .input-container {
+            display: flex;
+            flex-direction: column;  /* Stack elements top-to-bottom */
+            align-items: center;  /* Center everything */
+            gap: 10px;  /* Add space between elements */
+            width: 100%;
+        }
+        /* Input Group (Align Language Selection) */
+        .input-group {
+            display: flex;
+        flex-direction: column;
+        align-items: center;
+        }
+        /* Style the Select Dropdown */
+        select {
+            padding: 5px;
+            font-size: 16px;
+        }
+        /* Style for the Text Area */
+        textarea {
+            width: 80%;
+            max-width: 500px;
+            height: 100px;
+            font-size: 16px;
+            padding: 5px;
+            resize: vertical;
+        }
+        /* Style for the Speak Button */
+        #speak-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #speak-button:hover {
+            background-color: #0056b3;
+        }
         #file-list { 
             margin-top: 20px; 
         }
+        .sound-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .sound-box {
+            width: 150px;
+            height: 100px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex; /* Flexbox for alignment */
+            flex-direction: column; /* Stack elements vertically */
+            justify-content: center; /* Center content vertically */
+            align-items: center; /* Center content horizontally */
+            text-align: center; /* Center the text itself */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            overflow: hidden; /* Prevent overflowing content */
+            text-decoration: none; /* Remove underline */
+            color: inherit; /* Inherit text color */
+            font-weight: bold;
+            font-size: 16px;
+            word-wrap: break-word; /* Break long words */
+            overflow-wrap: break-word; /* Support for breaking long words */
+            white-space: normal; /* Allow text to wrap */
+        }
+        .sound-box a {
+            text-align: center; /* Center text inside the link */
+            text-decoration: none; /* Remove underline */
+            color: inherit; /* Use inherited text color */
+            word-wrap: break-word; /* Enable word wrapping */
+            overflow-wrap: break-word; /* Compatibility for breaking words */
+            display: block; /* Ensure the text spans the box */
+            white-space: normal; /* Allow wrapping */
+        }
+        .sound-box div {
+            text-decoration: none; /* Remove underline */
+            font-family: 'Roboto', sans-serif; /* Keep the previous font style */
+        }
+        .sound-box:hover {
+            background-color: #eaeaea; /* Optional: Highlight on hover for better UX */
+        }
+        #controls {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }       
+        #stopButton {
+            background-color: red; /* Red background */
+            color: white; /* White text */
+            font-weight: bold; /* Bold text */
+            border: none; /* Remove borders */
+            padding: 10px 20px; /* Add padding for a larger button */
+            font-size: 16px; /* Increase font size */
+            border-radius: 5px; /* Add rounded corners */
+            cursor: pointer; /* Change cursor to pointer on hover */
+            transition: background-color 0.3s ease; /* Smooth hover effect */
+        }
+        #stopButton:hover {
+            background-color: darkred; /* Darker red on hover */
+        }
+</style>
+
     </style>
 </head>
 <body>
     <h1>FIGAROT</h1>
 
-    <!-- Tabs for Folders -->
+    <!-- Controls -->
+    <div id="controls">       
+        <button id="stopButton" onclick="killAllSounds()">TA GUEULE !</button>
+    </div>
+
+    <!-- Tab Bar -->
     <div id="folder-tabs">
+        <!-- Fixed Tab (Parle, Figarot !) -->
+        <div class="tab active" id="fixed-tab" onclick="showFixedTab()">Parle, Figarot !</div>
+
+        <!-- Dynamic Tabs for Folders -->
         {% for item in directory_contents %}
             {% if item.type == 'folder' %}
                 <div class="tab" onclick="loadFolderContents('{{ item.name }}')">
@@ -41,12 +163,42 @@
         {% endfor %}
     </div>
 
+    <!-- Fixed Tab Content (Parle, Figarot !) -->
+    <div id="fixed-tab-content">
+        <h2>Parle, Figarot !</h2>
+        
+        <div class="input-container">
+            <!-- Language Selection -->
+            <div class="input-group">
+                <label for="language">Choisis ta langue :</label>
+                <select id="language">
+                    <option value="fr">Français</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <!-- Text Input -->
+            <textarea id="text-input" rows="4" cols="50" placeholder="Écris quelque chose de débile ici..."></textarea>
+
+            <!-- Speak Button -->
+            <button id="speak-button" onclick="speakText()">Parle</button>
+        </div>
+    </div>
+
     <!-- Display Files -->
     <div id="file-list">
-        <h2>Select a folder to see files</h2>
+        <h2>À toi de jouer 😁</h2>
     </div>
 
     <script>
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) {
+                return text; // No need to truncate
+            }
+            const visibleChars = Math.floor((maxLength - 3) / 2); // Characters to show on each side
+            return text.slice(0, visibleChars) + '...' + text.slice(-visibleChars); // Truncated format
+        }
+
         // Function to load folder contents via AJAX
         function loadFolderContents(folder) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -56,20 +208,30 @@
                 .then(response => response.json())
                 .then(data => {
                     const fileList = document.getElementById('file-list');
-                    fileList.innerHTML = `<h2>Sons de ${folder}</h2><ul>`;
+                    fileList.innerHTML = `<h2>Sons de ${folder}</h2>`;
+                    const soundGrid = document.createElement('div');
+                    soundGrid.classList.add('sound-grid');
 
                     data.forEach(item => {
                         if (item.type === 'file') {
                             const filePath = `./samples/${folder}/${item.name}`;
-                            fileList.innerHTML += `
-                                <li>
-                                    <a href="#" onclick="playSound('${filePath}')">${item.name}</a>
-                                </li>`;
+                            const fileNameWithoutExtension = item.name.replace(/\.[^/.]+$/, ""); // Remove the extension
+
+                            // Truncate the name if it is too long
+                            const truncatedName = truncateText(fileNameWithoutExtension, 22); // Adjust maxLength as needed
+
+                            const soundBox = document.createElement('a'); // Use <a> as the main wrapper
+                            soundBox.classList.add('sound-box');
+                            soundBox.href = "#"; // Maintain the link behavior
+                            soundBox.onclick = () => playSound(filePath); // Attach the playSound function
+                            soundBox.innerHTML = `<div>${truncatedName}</div>`; // Inner content
+                            soundGrid.appendChild(soundBox);
                         }
                     });
-                    fileList.innerHTML += `</ul>`;
+                    
+                    fileList.appendChild(soundGrid);
                 });
-        }
+        }        
         
         // Function to trigger sound playback on the server
         function playSound(filePath) {
@@ -90,6 +252,105 @@
                 }
             });
         }
+
+        // Function to stop all sounds
+        function killAllSounds() {
+            fetch('/stop', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'stopped') {
+                    console.log('All sounds stopped.');
+                } else {
+                    console.error('Error stopping sounds.');
+                }
+            });
+        }
+
+        
+    function showFixedTab() {
+        document.getElementById('fixed-tab-content').style.display = 'block';
+        document.getElementById('file-list').style.display = 'none';
+
+        // Deactivate all other tabs
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        document.getElementById('fixed-tab').classList.add('active');
+    }
+
+    function loadFolderContents(folder) {
+        document.getElementById('fixed-tab-content').style.display = 'none';
+        document.getElementById('file-list').style.display = 'block';
+
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+
+        fetch(`/folder_contents?folder=${folder}`)
+            .then(response => response.json())
+            .then(data => {
+                const fileList = document.getElementById('file-list');
+                fileList.innerHTML = `<h2>Sons de ${folder}</h2>`;
+                const soundGrid = document.createElement('div');
+                soundGrid.classList.add('sound-grid');
+
+                data.forEach(item => {
+                    if (item.type === 'file') {
+                        const filePath = `./samples/${folder}/${item.name}`;
+                        const truncatedName = item.name.replace(/\.[^/.]+$/, "");
+
+                        const soundBox = document.createElement('a');
+                        soundBox.classList.add('sound-box');
+                        soundBox.href = "#";
+                        soundBox.onclick = () => playSound(filePath);
+                        soundBox.innerHTML = `<div>${truncatedName}</div>`;
+                        soundGrid.appendChild(soundBox);
+                    }
+                });
+
+                fileList.appendChild(soundGrid);
+            });
+    }
+    
+    function speakText() {
+        let textInput = document.getElementById('text-input');  // Get the text input element
+        let languageSelect = document.getElementById('language');  // Get the language selection
+        let text = textInput.value.trim();  // Trim spaces from input
+        let lang = languageSelect.value;  // Get the selected language
+
+        if (!text) {
+            alert("Veuillez entrer du texte !");
+            return;
+        }
+
+        console.log("Sending request to server with:", { text, lang }); // ✅ Debugging log
+
+        fetch('/speak', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, lang: lang })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Server Response:", data); // ✅ Debugging log
+
+            if (data.status === 'success') {
+                console.log(`Speaking in ${lang}: ${text}`);
+                
+                // ✅ Reset text input field after speaking
+                textInput.value = "";
+
+                // ✅ Ensure the selected language remains the same
+                languageSelect.value = lang;
+
+                console.log("Text input reset!"); // ✅ Debugging log
+            } else {
+                console.error("Error: " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Request failed:", error);
+        });
+    }
     </script>
 </body>
 </html>

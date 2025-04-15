@@ -1,7 +1,12 @@
 import os
 
 class Config:
-    SAMPLES_PATH = "./samples/"
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
+    SAMPLES_PATH = "./samples/"    
     DEBUG = True
-    # Add other configuration options as needed
+    # pygame mixer settings
+    pygame_mixer = {
+        'frequency': 44100,
+        'size': -16,  # 16-bit signed
+        'channels': 2,  # Stereo
+        'buffer': 8192,  # Buffer size
+    }
