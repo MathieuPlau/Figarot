@@ -6,7 +6,10 @@ from config import Config
 from pathlib import Path
 
 # Initialize pygame mixer
-pygame.mixer.init()
+pygame.mixer.init(Config.pygame_mixer['frequency'],
+                   Config.pygame_mixer['size'],
+                   Config.pygame_mixer['channels'],
+                   Config.pygame_mixer['buffer'])
 
 # Thread-safe list to store active sounds
 active_sounds_lock = threading.Lock()
@@ -66,7 +69,10 @@ def play_audio_file(sound_path):
         def play_mp3():
             nonlocal play_obj
             if not pygame.mixer.get_init():
-                pygame.mixer.init()
+                pygame.mixer.init(Config.pygame_mixer['frequency'],
+                   Config.pygame_mixer['size'],
+                   Config.pygame_mixer['channels'],
+                   Config.pygame_mixer['buffer'])
 
             sound = pygame.mixer.Sound(sound_path)  # Load the MP3 as a Sound object
             channel = sound.play()  # Play the sound on a new channel

@@ -8,6 +8,12 @@ import time
 from app.fichiers import active_sounds_lock, active_sounds
 from config import Config
 
+# Initialize pygame mixer
+pygame.mixer.init(Config.pygame_mixer['frequency'],
+                   Config.pygame_mixer['size'],
+                   Config.pygame_mixer['channels'],
+                   Config.pygame_mixer['buffer'])
+
 def speak(text, lang):
 
     if(Config.DEBUG):
@@ -26,7 +32,10 @@ def speak(text, lang):
 
     def play_speech():
         if not pygame.mixer.get_init():
-               pygame.mixer.init()
+               pygame.mixer.init(Config.pygame_mixer['frequency'],
+                   Config.pygame_mixer['size'],
+                   Config.pygame_mixer['channels'],
+                   Config.pygame_mixer['buffer'])
         
         sound = pygame.mixer.Sound(filename)
         channel = sound.play()
