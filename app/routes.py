@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, send_file, jsonify
+from flask import Blueprint, render_template, request, send_file, jsonify, current_app
 from app.fichiers import parse_directories, parse_files, play_audio_file, active_sounds, active_sounds_lock, stop
 from app.voix import speak
 from config import Config
@@ -53,4 +53,13 @@ def speak_route():
     threading.Thread(target=speak, args=(text, lang)).start()
 
     return jsonify({"status": "success", "message": "Speaking text"})
+
+@main_bp.route("/play/<filename>")
+def play(filename):
+    audio_engine = current_app.audio_engine
+    if audio_engine:
+        audio_engine.play(filename)
+        return f"Playing {filename}"
+    else:
+        return "Audio engine not initialized", 500
 

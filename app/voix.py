@@ -83,12 +83,12 @@ def speak(text, lang):
         # When playback is finished, delete the file
         play_obj.delete_file()
 
-        # ✅ Remove from active sounds list
+        # Remove from active sounds list
         with active_sounds_lock:
             if play_obj in active_sounds:
                 active_sounds.remove(play_obj)
 
-        # ✅ Quit mixer only if no sounds are left
+        # Quit mixer only if no sounds are left
         with active_sounds_lock:
             if not active_sounds:
                 pygame.mixer.quit()
