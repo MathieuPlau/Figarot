@@ -145,7 +145,7 @@
 
     <!-- Controls -->
     <div id="controls">       
-        <button id="stopButton" onclick="killAllSounds()">TA GUEULE !</button>
+        <button id="stopButton" onclick="fetch('/stop', {method: 'POST'})">TA GUEULE !</button>
     </div>
 
     <!-- Tab Bar -->
@@ -197,41 +197,7 @@
             }
             const visibleChars = Math.floor((maxLength - 3) / 2); // Characters to show on each side
             return text.slice(0, visibleChars) + '...' + text.slice(-visibleChars); // Truncated format
-        }
-
-        // Function to load folder contents via AJAX
-        function loadFolderContents(folder) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-
-            fetch(`/folder_contents?folder=${folder}`)
-                .then(response => response.json())
-                .then(data => {
-                    const fileList = document.getElementById('file-list');
-                    fileList.innerHTML = `<h2>Sons de ${folder}</h2>`;
-                    const soundGrid = document.createElement('div');
-                    soundGrid.classList.add('sound-grid');
-
-                    data.forEach(item => {
-                        if (item.type === 'file') {
-                            const filePath = `./samples/${folder}/${item.name}`;
-                            const fileNameWithoutExtension = item.name.replace(/\.[^/.]+$/, ""); // Remove the extension
-
-                            // Truncate the name if it is too long
-                            const truncatedName = truncateText(fileNameWithoutExtension, 22); // Adjust maxLength as needed
-
-                            const soundBox = document.createElement('a'); // Use <a> as the main wrapper
-                            soundBox.classList.add('sound-box');
-                            soundBox.href = "#"; // Maintain the link behavior
-                            soundBox.onclick = () => playSound(filePath); // Attach the playSound function
-                            soundBox.innerHTML = `<div>${truncatedName}</div>`; // Inner content
-                            soundGrid.appendChild(soundBox);
-                        }
-                    });
-                    
-                    fileList.appendChild(soundGrid);
-                });
-        }        
+        }     
         
         // Function to trigger sound playback on the server
         function playSound(filePath) {
@@ -243,13 +209,8 @@
                 },
                 body: JSON.stringify({ file_path: filePath })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    console.log(data.message);
-                } else {
-                    console.error(data.message);
-                }
+            .catch(error => {
+                console.error('Error occurred while playing sound:', error);
             });
         }
 
@@ -267,90 +228,89 @@
                 }
             });
         }
-
         
-    function showFixedTab() {
-        document.getElementById('fixed-tab-content').style.display = 'block';
-        document.getElementById('file-list').style.display = 'none';
+        function showFixedTab() {
+            document.getElementById('fixed-tab-content').style.display = 'block';
+            document.getElementById('file-list').style.display = 'none';
 
-        // Deactivate all other tabs
-        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-        document.getElementById('fixed-tab').classList.add('active');
-    }
-
-    function loadFolderContents(folder) {
-        document.getElementById('fixed-tab-content').style.display = 'none';
-        document.getElementById('file-list').style.display = 'block';
-
-        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-        event.target.classList.add('active');
-
-        fetch(`/folder_contents?folder=${folder}`)
-            .then(response => response.json())
-            .then(data => {
-                const fileList = document.getElementById('file-list');
-                fileList.innerHTML = `<h2>Sons de ${folder}</h2>`;
-                const soundGrid = document.createElement('div');
-                soundGrid.classList.add('sound-grid');
-
-                data.forEach(item => {
-                    if (item.type === 'file') {
-                        const filePath = `./samples/${folder}/${item.name}`;
-                        const truncatedName = item.name.replace(/\.[^/.]+$/, "");
-
-                        const soundBox = document.createElement('a');
-                        soundBox.classList.add('sound-box');
-                        soundBox.href = "#";
-                        soundBox.onclick = () => playSound(filePath);
-                        soundBox.innerHTML = `<div>${truncatedName}</div>`;
-                        soundGrid.appendChild(soundBox);
-                    }
-                });
-
-                fileList.appendChild(soundGrid);
-            });
-    }
-    
-    function speakText() {
-        let textInput = document.getElementById('text-input');  // Get the text input element
-        let languageSelect = document.getElementById('language');  // Get the language selection
-        let text = textInput.value.trim();  // Trim spaces from input
-        let lang = languageSelect.value;  // Get the selected language
-
-        if (!text) {
-            alert("Veuillez entrer du texte !");
-            return;
+            // Deactivate all other tabs
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('fixed-tab').classList.add('active');
         }
 
-        console.log("Sending request to server with:", { text, lang }); // ✅ Debugging log
+        function loadFolderContents(folder) {
+            document.getElementById('fixed-tab-content').style.display = 'none';
+            document.getElementById('file-list').style.display = 'block';
 
-        fetch('/speak', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text, lang: lang })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Server Response:", data); // ✅ Debugging log
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
 
-            if (data.status === 'success') {
-                console.log(`Speaking in ${lang}: ${text}`);
-                
-                // ✅ Reset text input field after speaking
-                textInput.value = "";
+            fetch(`/folder_contents?folder=${folder}`)
+                .then(response => response.json())
+                .then(data => {
+                    const fileList = document.getElementById('file-list');
+                    fileList.innerHTML = `<h2>Sons de ${folder}</h2>`;
+                    const soundGrid = document.createElement('div');
+                    soundGrid.classList.add('sound-grid');
 
-                // ✅ Ensure the selected language remains the same
-                languageSelect.value = lang;
+                    data.forEach(item => {
+                        if (item.type === 'file') {
+                            const filePath = `./samples/${folder}/${item.name}`;
+                            const truncatedName = item.name.replace(/\.[^/.]+$/, "");
 
-                console.log("Text input reset!"); // ✅ Debugging log
-            } else {
-                console.error("Error: " + data.message);
+                            const soundBox = document.createElement('a');
+                            soundBox.classList.add('sound-box');
+                            soundBox.href = "#";
+                            soundBox.onclick = () => playSound(filePath);
+                            soundBox.innerHTML = `<div>${truncatedName}</div>`;
+                            soundGrid.appendChild(soundBox);
+                        }
+                    });
+
+                    fileList.appendChild(soundGrid);
+                });
+        }
+    
+        function speakText() {
+            let textInput = document.getElementById('text-input');  // Get the text input element
+            let languageSelect = document.getElementById('language');  // Get the language selection
+            let text = textInput.value.trim();  // Trim spaces from input
+            let lang = languageSelect.value;  // Get the selected language
+
+            if (!text) {
+                alert("Veuillez entrer du texte !");
+                return;
             }
-        })
-        .catch(error => {
-            console.error("Request failed:", error);
-        });
-    }
+
+            console.log("Sending request to server with:", { text, lang }); // ✅ Debugging log
+
+            fetch('/speak', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text, lang: lang })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Server Response:", data); // ✅ Debugging log
+
+                if (data.status === 'success') {
+                    console.log(`Speaking in ${lang}: ${text}`);
+                    
+                    // ✅ Reset text input field after speaking
+                    textInput.value = "";
+
+                    // ✅ Ensure the selected language remains the same
+                    languageSelect.value = lang;
+
+                    console.log("Text input reset!"); // ✅ Debugging log
+                } else {
+                    console.error("Error: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Request failed:", error);
+            });
+        }
     </script>
 </body>
 </html>

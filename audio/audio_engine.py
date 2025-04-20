@@ -27,6 +27,8 @@ class AudioEngine:
 
     def play_wav(self, file_path):
         def _play():
+            if Config.DEBUG:
+                print(f"[WAV] Playing {file_path}")
             wave_obj = sa.WaveObject.from_wave_file(file_path)
             play_obj = wave_obj.play()
             self._add_sound(play_obj)
@@ -36,7 +38,9 @@ class AudioEngine:
         threading.Thread(target=_play, daemon=True).start()
 
     def play_mp3(self, file_path):
-        def _play():
+        def _play():                
+            if Config.DEBUG:
+                print(f"[MP3] Playing {file_path}")
             if not pygame.mixer.get_init():
                 pygame.mixer.init(**Config.pygame_mixer)
 
@@ -117,6 +121,8 @@ class AudioEngine:
         with self.lock:
             for sound in self.active_sounds:
                 try:
+                    if Config.DEBUG:
+                        print(f"[STOP] STFU !!!")
                     sound.stop()
                 except Exception as e:
                     print(f"[Stop Error] {e}")
