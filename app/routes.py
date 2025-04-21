@@ -1,9 +1,7 @@
-from flask import Blueprint, render_template, request, send_file, jsonify, current_app
+from flask import Blueprint, render_template, request, jsonify
 from audio.audio_engine import AudioEngine
-from app.fichiers import parse_directories, parse_files, play_audio_file, active_sounds, active_sounds_lock, stop
+from app.file_manager import parse_directories, parse_files
 from config import Config
-import threading
-import os
 
 main_bp = Blueprint('main', __name__)
 audio_engine = AudioEngine()
@@ -32,13 +30,15 @@ def stop_sounds():
 @main_bp.route('/speak', methods=['POST'])
 def speak_route():
     data = request.json
-    print("Received data:", data)  # Debugging print
+
+    if(Config.DEBUG):
+        print("Received data:", data)  # Debugging print
 
     if not data:
         return jsonify({"status": "error", "message": "Invalid request"}), 400
 
     text = data.get("text", "")
-    lang = data.get("lang", "en")
+    lang = data.get("lang", "")
 
     if not text:
         return jsonify({"status": "error", "message": "No text provided"}), 400
@@ -46,7 +46,7 @@ def speak_route():
     # Speak the text
     audio_engine.play(text, lang)
 
-    return jsonify({'status': 'success', 'message': f'Speaking {text}'}), 200
+    return jsonify({'status': 'success', 'message': f'Speaking {text, lang}'}), 200
 
 @main_bp.route("/play_sound", methods=["POST"])
 def play_sound():

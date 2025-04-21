@@ -8,8 +8,6 @@ import simpleaudio as sa
 import pygame
 
 from config import Config
-
-
 class AudioEngine:
     def __init__(self):
         pygame.mixer.init(**Config.pygame_mixer)

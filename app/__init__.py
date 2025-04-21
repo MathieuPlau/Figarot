@@ -10,8 +10,7 @@ def create_app(audio_engine=None):
     # Attach to app context
     app.audio_engine = audio_engine
 
-    # Register Blueprints or routes
-    
+    # Register Blueprints or routes    
     app.register_blueprint(main_bp)
 
     return app
