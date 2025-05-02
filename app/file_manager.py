@@ -1,5 +1,5 @@
 import os
-from config import Config
+from config import DEBUG
 from pathlib import Path
 
 # Returns directories from the given path
@@ -17,7 +17,7 @@ def parse_directories(path):
 
 # Returns files from the given directory
 def parse_files(directory_path): 
-    if(Config.DEBUG):
+    if(DEBUG):
         print("DEBUG: " + directory_path)   
     
     files = []

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 from audio.audio_engine import AudioEngine
 from app.file_manager import parse_directories, parse_files
-from config import Config
+from config import SAMPLES_PATH, DEBUG
 
 main_bp = Blueprint('main', __name__)
 audio_engine = AudioEngine()
@@ -9,7 +9,7 @@ audio_engine = AudioEngine()
 @main_bp.route('/')
 def sounds():
     # Serve the main page with tabs for folders
-    directory_path = request.args.get('dir', Config.SAMPLES_PATH)
+    directory_path = request.args.get('dir', SAMPLES_PATH)
     directory_contents = parse_directories(directory_path)  # Get only directories
     return render_template('sounds.html', directory_contents=directory_contents, directory_path=directory_path)
 
@@ -17,7 +17,7 @@ def sounds():
 def folder_contents():
     # Fetch the contents of a folder dynamically
     folder_path = request.args.get('folder')
-    folder_contents = parse_files(Config.SAMPLES_PATH + folder_path)  # Get only files in the folder
+    folder_contents = parse_files(SAMPLES_PATH + folder_path)  # Get only files in the folder
     return jsonify(folder_contents)
    
 # Kill all sounds
@@ -31,7 +31,7 @@ def stop_sounds():
 def speak_route():
     data = request.json
 
-    if(Config.DEBUG):
+    if(DEBUG):
         print("Received data:", data)  # Debugging print
 
     if not data:
@@ -53,7 +53,7 @@ def play_sound():
     data = request.get_json()
     file_path = data.get('file_path')
 
-    if(Config.DEBUG):
+    if(DEBUG):
         print("Received file path:", file_path)
 
     if not file_path:

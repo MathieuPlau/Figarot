@@ -6,11 +6,11 @@ from pathlib import Path
 from gtts import gTTS
 import simpleaudio as sa
 import pygame
+from config import DEBUG, PYGAME_MIXER
 
-from config import Config
 class AudioEngine:
     def __init__(self):
-        pygame.mixer.init(**Config.pygame_mixer)
+        pygame.mixer.init(**PYGAME_MIXER)
         self.active_sounds = []
         self.lock = threading.Lock()
 
@@ -25,7 +25,7 @@ class AudioEngine:
 
     def play_wav(self, file_path):
         def _play():
-            if Config.DEBUG:
+            if DEBUG:
                 print(f"[WAV] Playing {file_path}")
             wave_obj = sa.WaveObject.from_wave_file(file_path)
             play_obj = wave_obj.play()
@@ -37,10 +37,10 @@ class AudioEngine:
 
     def play_mp3(self, file_path):
         def _play():                
-            if Config.DEBUG:
+            if DEBUG:
                 print(f"[MP3] Playing {file_path}")
             if not pygame.mixer.get_init():
-                pygame.mixer.init(**Config.pygame_mixer)
+                pygame.mixer.init(**PYGAME_MIXER)
 
             sound = pygame.mixer.Sound(file_path)
             channel = sound.play()
@@ -119,7 +119,7 @@ class AudioEngine:
         with self.lock:
             for sound in self.active_sounds:
                 try:
-                    if Config.DEBUG:
+                    if DEBUG:
                         print(f"[STOP] STFU !!!")
                     sound.stop()
                 except Exception as e:
