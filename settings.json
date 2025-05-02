@@ -1,0 +1,19 @@
+{
+    "samples_path": "samples/",
+    "network": {
+        "host": "0.0.0.0",
+        "port": 5000
+    },
+    "debug": true,
+    "pygame_mixer": {
+        "frequency": 44100,
+        "size": -16,
+        "channels": 2, 
+        "buffer": 8192 
+    },
+    "audio_settings": {
+        "volume": 100,
+        "balance": 0
+    },
+    "chaos_mode": false
+}

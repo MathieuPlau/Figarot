@@ -1,12 +1,14 @@
+import json
 import os
 
-class Config:
-    SAMPLES_PATH = "./samples/"    
-    DEBUG = True
-    # pygame mixer settings
-    pygame_mixer = {
-        'frequency': 44100,
-        'size': -16,  # 16-bit signed
-        'channels': 2,  # Stereo
-        'buffer': 8192,  # Buffer size
-    }
+CONFIG_FILE = os.path.join(os.path.dirname(__file__), "settings.json")
+
+with open(CONFIG_FILE, "r") as file:
+    settings = json.load(file)
+
+SAMPLES_PATH = settings["samples_path"]
+NETWORK = settings["network"]
+DEBUG = settings["debug"]
+PYGAME_MIXER = settings["pygame_mixer"]
+AUDIO_SETTINGS = settings["audio_settings"]
+CHAOS_MODE = settings["chaos_mode"]
