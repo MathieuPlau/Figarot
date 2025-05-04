@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Figarot Settings</title>
+    <style>
+        body { 
+            font-family: 'Roboto', sans-serif;
+        }
+         h1, h2 {
+            font-family: 'Roboto', sans-serif; 
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <h1>Figarot Settings</h1>
+    <form method="POST">
+        <label for="samples_path">Sample Path:</label>
+        <input type="text" id="samples_path" name="samples_path"
+               value="{{ settings.samples_path }}"><br><br>
+
+        <label for="chaos_mode">Allow Overlap (Chaos Mode):</label>
+        <input type="checkbox" id="chaos_mode" name="chaos_mode"
+               {% if settings.chaos_mode %}checked{% endif %}><br><br>
+
+        <label for="debug">Enable Debug Mode:</label>
+        <input type="checkbox" id="debug" name="debug"
+               {% if settings.debug %}checked{% endif %}><br><br>
+
+        <label for="volume">Volume: {{ settings.audio_settings.volume }}</label><br>
+        <input type="range" id="volume" name="volume" min="0" max="100"
+               value="{{ settings.audio_settings.volume }}"><br><br>
+
+        <h2>Network Settings</h2>
+        <label for="network_host">Host:</label>
+        <input type="text" id="network_host" name="network_host"
+               value="{{ settings.network.host }}"><br><br>
+
+        <label for="network_port">Port:</label>
+        <input type="number" id="network_port" name="network_port"
+               value="{{ settings.network.port }}"><br><br>
+
+        <h2>Pygame Mixer Settings</h2>
+        <label for="frequency">Frequency:</label>
+        <input type="number" id="frequency" name="frequency"
+               value="{{ settings.pygame_mixer.frequency }}"><br><br>
+
+        <label for="size">Size:</label>
+        <input type="number" id="size" name="size"
+               value="{{ settings.pygame_mixer.size }}"><br><br>
+
+        <label for="channels">Channels:</label>
+        <input type="number" id="channels" name="channels"
+               value="{{ settings.pygame_mixer.channels }}"><br><br>
+
+        <label for="buffer">Buffer:</label>
+        <input type="number" id="buffer" name="buffer"
+               value="{{ settings.pygame_mixer.buffer }}"><br><br>
+
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html>

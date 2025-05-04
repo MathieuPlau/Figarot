@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, jsonify
+import json
+import threading
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for
 from audio.audio_engine import AudioEngine
 from app.file_manager import parse_directories, parse_files
-from config import SAMPLES_PATH, DEBUG
+from config import SAMPLES_PATH, DEBUG, CONFIG_FILE
 
 main_bp = Blueprint('main', __name__)
 audio_engine = AudioEngine()
@@ -48,6 +50,7 @@ def speak_route():
 
     return jsonify({'status': 'success', 'message': f'Speaking {text, lang}'}), 200
 
+# Sounds !
 @main_bp.route("/play_sound", methods=["POST"])
 def play_sound():
     data = request.get_json()
@@ -65,5 +68,52 @@ def play_sound():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
     return jsonify({'status': 'success', 'message': f'Playing {file_path}'}), 200
+
+def restart_app():
+    """Replaces the current process with a new one using the same command line."""
+    python = sys.executable
+    os.execv(python, [python] + sys.argv)
+
+def load_settings():
+    with open(CONFIG_FILE, "r") as file:
+        return json.load(file)
+
+def save_settings(settings):
+    with open(CONFIG_FILE, "w") as file:
+        json.dump(settings, file, indent=4)
+
+@main_bp.route("/settings", methods=["GET", "POST"])
+def settings_page():
+    settings = load_settings()
+
+    if request.method == "POST":
+        settings["samples_path"] = request.form.get("samples_path", "")
+        settings["chaos_mode"] = "chaos_mode" in request.form
+        settings["debug"] = "debug" in request.form
+
+        # Audio settings
+        volume = request.form.get("volume")
+        if volume is not None:
+            settings.setdefault("audio_settings", {})
+            settings["audio_settings"]["volume"] = int(volume)
+
+        # Network settings
+        settings.setdefault("network", {})
+        settings["network"]["host"] = request.form.get("network_host", "0.0.0.0")
+        settings["network"]["port"] = int(request.form.get("network_port", 5000))
+
+        # Pygame mixer settings
+        settings.setdefault("pygame_mixer", {})
+        settings["pygame_mixer"]["frequency"] = int(request.form.get("frequency", 44100))
+        settings["pygame_mixer"]["size"] = int(request.form.get("size", -16))
+        settings["pygame_mixer"]["channels"] = int(request.form.get("channels", 2))
+        settings["pygame_mixer"]["buffer"] = int(request.form.get("buffer", 8192))
+
+        save_settings(settings)
+        threading.Thread(target=restart_app).start()
+        return "<h1>Figarot is rebooting…</h1><p>Please wait a moment and refresh the page.</p>"
+
+
+    return render_template("settings.html", settings=settings)
 
 
