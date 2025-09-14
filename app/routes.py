@@ -1,5 +1,10 @@
+import os
+import sys
+import time
 import json
 import threading
+import subprocess
+
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for
 from audio.audio_engine import AudioEngine
 from app.file_manager import parse_directories, parse_files
@@ -69,10 +74,43 @@ def play_sound():
 
     return jsonify({'status': 'success', 'message': f'Playing {file_path}'}), 200
 
-def restart_app():
-    """Replaces the current process with a new one using the same command line."""
-    python = sys.executable
-    os.execv(python, [python] + sys.argv)
+def restart_app(detach: bool | None = None, delay_s: float = 0.2) -> None:
+    """
+    Restart the current Python program (Windows & Linux/macOS).
+
+    - POSIX: in-place exec (cleanest).
+    - Windows: spawn a detached child, then exit this one.
+    - Safe to call from a background thread.
+    """
+    # Only the "real" Flask process should restart (not the reloader parent).
+    # Values are: "true" for the reloader child, "false" for the parent, or None if no reloader.
+    run_main = os.environ.get("WERKZEUG_RUN_MAIN")
+    if run_main == "false":
+        return  # ignore in the reloader parent
+
+    if detach is None:
+        detach = (os.name == "nt")  # default: detach on Windows
+
+    python_or_exe = sys.executable
+    argv = [python_or_exe] + sys.argv[1:]
+
+    # POSIX: do a true in-place exec when not detaching
+    if os.name == "posix" and not detach:
+        os.execv(python_or_exe, [python_or_exe] + sys.argv)
+
+    # Windows or forced-detach: spawn then exit
+    creationflags = 0
+    if os.name == "nt":
+        # Detach so we don't inherit the current console/handles
+        DETACHED_PROCESS = 0x00000008
+        CREATE_NEW_PROCESS_GROUP = 0x00000200
+        if detach:
+            creationflags |= (DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP)
+
+    subprocess.Popen([python_or_exe] + sys.argv, close_fds=True, creationflags=creationflags)
+    time.sleep(delay_s)  # let the child start
+    os._exit(0)
+
 
 def load_settings():
     with open(CONFIG_FILE, "r") as file:
@@ -110,9 +148,15 @@ def settings_page():
         settings["pygame_mixer"]["buffer"] = int(request.form.get("buffer", 8192))
 
         save_settings(settings)
-        threading.Thread(target=restart_app).start()
-        return "<h1>Figarot is rebooting…</h1><p>Please wait a moment and refresh the page.</p>"
 
+        # Restart after responding; daemon=True so it can't hang shutdown.
+        threading.Thread(
+            target=restart_app,
+            kwargs={"detach": (os.name == "nt"), "delay_s": 0.2},
+            daemon=True
+        ).start()
+
+        return "<h1>Figarot is rebooting…</h1><p>Please wait a moment and refresh the page.</p>"
 
     return render_template("settings.html", settings=settings)
 
