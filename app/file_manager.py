@@ -1,5 +1,5 @@
 import os
-from config import DEBUG
+from config import Config
 from pathlib import Path
 
 # Returns directories from the given path

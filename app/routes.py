@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 from audio.audio_engine import AudioEngine
 from app.file_manager import parse_directories, parse_files
-from config import SAMPLES_PATH, DEBUG
+from config import Config
 
 main_bp = Blueprint('main', __name__)
 audio_engine = AudioEngine()

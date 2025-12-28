@@ -6,11 +6,16 @@ from pathlib import Path
 from gtts import gTTS
 import simpleaudio as sa
 import pygame
-from config import DEBUG, PYGAME_MIXER
+from config import Config
 
 class AudioEngine:
     def __init__(self):
-        pygame.mixer.init(**PYGAME_MIXER)
+        pygame.mixer.init(
+            frequency=Config.PYGAME_MIXER['frequency'],
+            size=Config.PYGAME_MIXER['size'],
+            channels=Config.PYGAME_MIXER['channels'],
+            buffer=Config.PYGAME_MIXER['buffer']
+        )
         self.active_sounds = []
         self.lock = threading.Lock()
 
@@ -106,14 +111,9 @@ class AudioEngine:
 
         threading.Thread(target=_speak, daemon=True).start()
 
-    def play(self, file_or_text, lang='fr'):
-        suffix = Path(file_or_text).suffix.lower()
-        if suffix == '.wav':
-            self.play_wav(file_or_text)
-        elif suffix == '.mp3':
-            self.play_mp3(file_or_text)
-        else:
-            self.speak(file_or_text, lang)
+    def play(self, sound_path):        
+        sound = pygame.mixer.Sound(sound_path)
+        sound.play()
 
     def stop_all(self):
         with self.lock:

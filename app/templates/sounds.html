@@ -145,7 +145,7 @@
 
     <!-- Controls -->
     <div id="controls">       
-        <button id="stopButton" onclick="fetch('/stop', {method: 'POST'})">TA GUEULE !</button>
+        <button id="stopButton" onclick="killAllSounds()">TA GUEULE !</button>
     </div>
 
     <!-- Tab Bar -->
@@ -189,51 +189,53 @@
     <div id="file-list">
         <h2>À toi de jouer 😁</h2>
     </div>
-
     <script>
+        // Variable globale pour contrôler le son en cours de lecture
+        let currentAudio = null;
+
         function truncateText(text, maxLength) {
-            if (text.length <= maxLength) {
-                return text; // No need to truncate
-            }
-            const visibleChars = Math.floor((maxLength - 3) / 2); // Characters to show on each side
-            return text.slice(0, visibleChars) + '...' + text.slice(-visibleChars); // Truncated format
+            if (text.length <= maxLength) return text;
+            const visibleChars = Math.floor((maxLength - 3) / 2);
+            return text.slice(0, visibleChars) + '...' + text.slice(-visibleChars);
         }     
         
-        // Function to trigger sound playback on the server
-        function playSound(filePath) {
-            // Send a POST request to the server to play the sound
-            fetch('/play_sound', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ file_path: filePath })
-            })
-            .catch(error => {
-                console.error('Error occurred while playing sound:', error);
+        function playSound(folder, fileName) {
+            // 1. On construit l'URL correcte pour Flask
+            const audioUrl = `/audio/${folder}/${fileName}`;
+            
+            console.log("Tentative de lecture :", audioUrl);
+
+            if (currentAudio) {
+                currentAudio.pause();
+            }
+
+            currentAudio = new Audio(audioUrl);
+            
+            currentAudio.play().catch(error => {
+                // 2. On affiche l'erreur réelle dans la console (F12) pour déboguer
+                console.error('Erreur de lecture :', error);
+                
+                // 3. On n'affiche l'alerte que si c'est VRAIMENT un problème de blocage
+                if (error.name === 'NotAllowedError') {
+                    alert("Cliquez sur la page pour autoriser l'audio.");
+                } else {
+                    console.error("Le fichier est probablement introuvable ou le format est invalide.");
+                }
             });
         }
 
-        // Function to stop all sounds
         function killAllSounds() {
-            fetch('/stop', {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'stopped') {
-                    console.log('All sounds stopped.');
-                } else {
-                    console.error('Error stopping sounds.');
-                }
-            });
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            // On peut aussi prévenir le serveur par politesse
+            fetch('/stop', {method: 'POST'});
         }
         
         function showFixedTab() {
             document.getElementById('fixed-tab-content').style.display = 'block';
             document.getElementById('file-list').style.display = 'none';
-
-            // Deactivate all other tabs
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.getElementById('fixed-tab').classList.add('active');
         }
@@ -255,13 +257,16 @@
 
                     data.forEach(item => {
                         if (item.type === 'file') {
-                            const filePath = `./samples/${folder}/${item.name}`;
                             const truncatedName = item.name.replace(/\.[^/.]+$/, "");
 
                             const soundBox = document.createElement('a');
                             soundBox.classList.add('sound-box');
                             soundBox.href = "#";
-                            soundBox.onclick = () => playSound(filePath);
+                            // On passe le dossier et le nom du fichier séparément
+                            soundBox.onclick = (e) => {
+                                e.preventDefault();
+                                playSound(folder, item.name);
+                            };
                             soundBox.innerHTML = `<div>${truncatedName}</div>`;
                             soundGrid.appendChild(soundBox);
                         }
@@ -270,19 +275,19 @@
                     fileList.appendChild(soundGrid);
                 });
         }
-    
+
+        // Note pour SpeakText : Cette fonction nécessite que ton serveur 
+        // renvoie le fichier généré pour être joué sur le client.
         function speakText() {
-            let textInput = document.getElementById('text-input');  // Get the text input element
-            let languageSelect = document.getElementById('language');  // Get the language selection
-            let text = textInput.value.trim();  // Trim spaces from input
-            let lang = languageSelect.value;  // Get the selected language
+            let textInput = document.getElementById('text-input');
+            let languageSelect = document.getElementById('language');
+            let text = textInput.value.trim();
+            let lang = languageSelect.value;
 
             if (!text) {
                 alert("Veuillez entrer du texte !");
                 return;
             }
-
-            console.log("Sending request to server with:", { text, lang }); // ✅ Debugging log
 
             fetch('/speak', {
                 method: 'POST',
@@ -291,24 +296,12 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log("Server Response:", data); // ✅ Debugging log
-
                 if (data.status === 'success') {
-                    console.log(`Speaking in ${lang}: ${text}`);
-                    
-                    // ✅ Reset text input field after speaking
                     textInput.value = "";
-
-                    // ✅ Ensure the selected language remains the same
-                    languageSelect.value = lang;
-
-                    console.log("Text input reset!"); // ✅ Debugging log
-                } else {
-                    console.error("Error: " + data.message);
+                    // Si ton backend '/speak' génère un fichier jouable, 
+                    // il faudrait le récupérer ici pour le jouer avec playSound().
+                    console.log("Texte envoyé au serveur");
                 }
-            })
-            .catch(error => {
-                console.error("Request failed:", error);
             });
         }
     </script>
