@@ -10,12 +10,15 @@ from config import Config
 
 class AudioEngine:
     def __init__(self):
-        pygame.mixer.init(
-            frequency=Config.PYGAME_MIXER['frequency'],
-            size=Config.PYGAME_MIXER['size'],
-            channels=Config.PYGAME_MIXER['channels'],
-            buffer=Config.PYGAME_MIXER['buffer']
-        )
+        try:
+            pygame.mixer.init(
+                frequency=Config.PYGAME_MIXER['frequency'],
+                size=Config.PYGAME_MIXER['size'],
+                channels=Config.PYGAME_MIXER['channels'],
+                buffer=Config.PYGAME_MIXER['buffer']
+            )
+        except Exception as e:
+            print(f"Audio device not found, running in silent mode: {e}")
         self.active_sounds = []
         self.lock = threading.Lock()
 
